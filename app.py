@@ -434,11 +434,7 @@ with tab1:
                             )
                         )
 
-                        if hasattr(resume_file, "getvalue"):
-                            resume_bytes = resume_file.getvalue()
-                        else:
-                            resume_file.seek(0)
-                            resume_bytes = resume_file.read()
+                        resume_bytes = resume_file.getvalue()
 
                         part = MIMEBase(
                             "application",
