@@ -165,125 +165,133 @@ def detect_target_role(text: str) -> str:
 
 def extract_company_from_email(email):
     """
-    Extract company name from recruiter email.
+    Extract company name from recruiter email domain.
 
     Examples:
-        jobs@capgemini.com            -> Capgemini
-        careers@amazon.jobs           -> Amazon
-        recruiter@subdomain.tcs.com   -> TCS
-        hiring@mail.microsoft.com     -> Microsoft
-        hr@accentureindia.com         -> Accenture
-        abc@gmail.com                 -> None
+        garima.rai@gartner.com          -> Gartner
+        jobs@careers.microsoft.com      -> Microsoft
+        recruitment@amazon.jobs         -> Amazon
+        talent@hiring.capgemini.co.in   -> Capgemini
+        hr@techmahindra.com             -> Tech Mahindra
+        jobs@ltimindtree.com            -> LTIMindtree
     """
 
     if not email or "@" not in email:
         return None
 
     try:
-        domain = email.split("@")[1].strip().lower()
 
-        # Remove port if present
+        domain = (
+            email.split("@")[1]
+            .lower()
+            .strip()
+        )
+
         domain = domain.split(":")[0]
 
-        parts = domain.split(".")
+        parts = [
+            re.sub(r"[^a-z0-9]", "", p)
+            for p in domain.split(".")
+        ]
 
-        # Common email/service subdomains
-        skip_domains = {
-            "mail",
-            "email",
-            "mailer",
-            "smtp",
-            "mx",
-            "careers",
-            "career",
+        ignore = {
+            "com",
+            "co",
+            "in",
+            "org",
+            "net",
+            "edu",
+            "gov",
             "jobs",
             "job",
+            "career",
+            "careers",
             "recruitment",
             "recruiting",
-            "talent",
-            "hr",
             "hiring",
-            "apply",
+            "talent",
+            "mail",
+            "email",
+            "smtp",
+            "mx",
             "team",
             "people",
+            "hr",
+            "global",
+            "corp",
+            "corporate",
+            "group",
+            "www",
         }
 
-        # Check all domain parts from right to left
-        candidates = []
+        aliases = {
+            "tcs": "Tata Consultancy Services",
+            "cts": "Cognizant",
+            "cognizant": "Cognizant",
+            "capgemini": "Capgemini",
+            "infosys": "Infosys",
+            "wipro": "Wipro",
+            "accenture": "Accenture",
+            "accentureindia": "Accenture",
+            "ibm": "IBM",
+            "deloitte": "Deloitte",
+            "ey": "Ernst & Young",
+            "pwc": "PwC",
+            "kpmg": "KPMG",
+            "oracle": "Oracle",
+            "google": "Google",
+            "amazon": "Amazon",
+            "amazonaws": "Amazon AWS",
+            "microsoft": "Microsoft",
+            "meta": "Meta",
+            "facebook": "Meta",
+            "gartner": "Gartner",
+            "genpact": "Genpact",
+            "ltimindtree": "LTIMindtree",
+            "mindtree": "Mindtree",
+            "techmahindra": "Tech Mahindra",
+            "hcl": "HCL",
+            "adobe": "Adobe",
+            "sap": "SAP",
+            "salesforce": "Salesforce",
+            "servicenow": "ServiceNow",
+            "zoho": "Zoho",
+        }
 
-        if len(parts) >= 2:
-            candidates.append(parts[-2])
+        # Check every part from right to left
+        for part in reversed(parts):
 
-        candidates.extend(reversed(parts[:-2]))
-
-        for candidate in candidates:
-
-            candidate = re.sub(
-                r"[^a-z0-9]",
-                "",
-                candidate.lower()
-            )
-
-            if not candidate:
+            if (
+                not part
+                or part in ignore
+                or part in GENERIC_EMAIL_DOMAINS
+            ):
                 continue
 
-            if candidate in GENERIC_EMAIL_DOMAINS:
-                continue
+            if part in aliases:
+                return aliases[part]
 
-            if candidate in skip_domains:
-                continue
+            if part in COMPANY_CANONICAL:
+                return COMPANY_CANONICAL[part]
 
-            # Explicit canonical mapping
-            if candidate in COMPANY_CANONICAL:
-                return COMPANY_CANONICAL[candidate]
-
-            # Common aliases
-            aliases = {
-                "amazonaws": "Amazon AWS",
-                "aws": "Amazon AWS",
-                "tataconsultancyservices": "TCS",
-                "tcs": "TCS",
-                "accentureindia": "Accenture",
-                "microsoft": "Microsoft",
-                "google": "Google",
-                "meta": "Meta",
-                "facebook": "Meta",
-                "ibm": "IBM",
-                "ey": "EY",
-                "kpmg": "KPMG",
-                "pwc": "PwC",
-                "deloitte": "Deloitte",
-                "capgemini": "Capgemini",
-                "infosys": "Infosys",
-                "wipro": "Wipro",
-                "cognizant": "Cognizant",
-                "hcl": "HCL",
-                "techmahindra": "Tech Mahindra",
-                "oracle": "Oracle",
-                "sap": "SAP",
-                "adobe": "Adobe",
-                "salesforce": "Salesforce",
-                "servicenow": "ServiceNow",
-                "zoho": "Zoho",
-            }
-
-            if candidate in aliases:
-                return aliases[candidate]
-
-            # Remove common suffixes
             cleaned = re.sub(
-                r"(india|global|group|tech|technologies|solutions|services)$",
+                r"(india|global|group|tech|services|solutions|technologies)$",
                 "",
-                candidate
+                part
             )
 
-            if cleaned and len(cleaned) > 2:
+            if len(cleaned) > 2:
                 return cleaned.title()
 
         return None
 
     except Exception:
         return None
+
+
+
+
+
 
 
 def normalize_exp(exp):
