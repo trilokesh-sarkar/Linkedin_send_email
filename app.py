@@ -142,18 +142,13 @@ except Exception as e:
 # SMTP Credentials
 # --------------------------------------------------
 
-st.sidebar.header("🔐 SMTP Credentials")
+smtp_email = get_secret("SMTP_EMAIL")
+smtp_password = get_secret("SMTP_PASSWORD")
 
-smtp_email = st.sidebar.text_input(
-    "Sender Email (Gmail)",
-    value=get_secret("SMTP_EMAIL")
-)
-
-smtp_password = st.sidebar.text_input(
-    "App Password",
-    value=get_secret("SMTP_PASSWORD"),
-    type="password"
-)
+if smtp_email and smtp_password:
+    st.sidebar.success("✅ Email configuration loaded")
+else:
+    st.sidebar.error("❌ SMTP credentials missing")
 
 # --------------------------------------------------
 # Main Tabs
