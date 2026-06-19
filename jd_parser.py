@@ -166,19 +166,124 @@ def detect_target_role(text: str) -> str:
 def extract_company_from_email(email):
     """
     Extract company name from recruiter email.
-    Example:
-        jobs@capgemini.com -> Capgemini
+
+    Examples:
+        jobs@capgemini.com            -> Capgemini
+        careers@amazon.jobs           -> Amazon
+        recruiter@subdomain.tcs.com   -> TCS
+        hiring@mail.microsoft.com     -> Microsoft
+        hr@accentureindia.com         -> Accenture
+        abc@gmail.com                 -> None
     """
+
     if not email or "@" not in email:
         return None
 
-    domain = email.split("@")[1].lower()
-    domain = domain.split(".")[0]
+    try:
+        domain = email.split("@")[1].strip().lower()
 
-    if domain in GENERIC_EMAIL_DOMAINS:
+        # Remove port if present
+        domain = domain.split(":")[0]
+
+        parts = domain.split(".")
+
+        # Common email/service subdomains
+        skip_domains = {
+            "mail",
+            "email",
+            "mailer",
+            "smtp",
+            "mx",
+            "careers",
+            "career",
+            "jobs",
+            "job",
+            "recruitment",
+            "recruiting",
+            "talent",
+            "hr",
+            "hiring",
+            "apply",
+            "team",
+            "people",
+        }
+
+        # Check all domain parts from right to left
+        candidates = []
+
+        if len(parts) >= 2:
+            candidates.append(parts[-2])
+
+        candidates.extend(reversed(parts[:-2]))
+
+        for candidate in candidates:
+
+            candidate = re.sub(
+                r"[^a-z0-9]",
+                "",
+                candidate.lower()
+            )
+
+            if not candidate:
+                continue
+
+            if candidate in GENERIC_EMAIL_DOMAINS:
+                continue
+
+            if candidate in skip_domains:
+                continue
+
+            # Explicit canonical mapping
+            if candidate in COMPANY_CANONICAL:
+                return COMPANY_CANONICAL[candidate]
+
+            # Common aliases
+            aliases = {
+                "amazonaws": "Amazon AWS",
+                "aws": "Amazon AWS",
+                "tataconsultancyservices": "TCS",
+                "tcs": "TCS",
+                "accentureindia": "Accenture",
+                "microsoft": "Microsoft",
+                "google": "Google",
+                "meta": "Meta",
+                "facebook": "Meta",
+                "ibm": "IBM",
+                "ey": "EY",
+                "kpmg": "KPMG",
+                "pwc": "PwC",
+                "deloitte": "Deloitte",
+                "capgemini": "Capgemini",
+                "infosys": "Infosys",
+                "wipro": "Wipro",
+                "cognizant": "Cognizant",
+                "hcl": "HCL",
+                "techmahindra": "Tech Mahindra",
+                "oracle": "Oracle",
+                "sap": "SAP",
+                "adobe": "Adobe",
+                "salesforce": "Salesforce",
+                "servicenow": "ServiceNow",
+                "zoho": "Zoho",
+            }
+
+            if candidate in aliases:
+                return aliases[candidate]
+
+            # Remove common suffixes
+            cleaned = re.sub(
+                r"(india|global|group|tech|technologies|solutions|services)$",
+                "",
+                candidate
+            )
+
+            if cleaned and len(cleaned) > 2:
+                return cleaned.title()
+
         return None
 
-    return COMPANY_CANONICAL.get(domain, domain.title())
+    except Exception:
+        return None
 
 
 def normalize_exp(exp):
