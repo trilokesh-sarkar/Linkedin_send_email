@@ -593,59 +593,59 @@ def extract_job_details(jd_text: str) -> dict:
                     rng[1]
                 )
             )
-
     # --------------------------------------------------
-    # Company Extraction
+    # Company Extraction (Email First)
     # --------------------------------------------------
 
-    company_patterns = [
+    if result["recruiter_email"]:
 
-        # Gartner is expanding...
-        r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+(?:hiring|looking|expanding|growing|seeking)",
-
-        # Infosys is hiring...
-        r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+hiring",
-
-        # Join Gartner
-        r"(?:join|joining)\s+([A-Z][A-Za-z& ]{2,50})",
-
-        # Hiring at Gartner
-        r"hiring\s+(?:at\s+)?([A-Z][A-Za-z& ]{2,50})",
-
-        # Company: Gartner
-        r"company\s*[:\-]\s*(.+)",
-
-        # Organization: Gartner
-        r"organization\s*[:\-]\s*(.+)",
-
-        # Employer: Gartner
-        r"employer\s*[:\-]\s*(.+)",
-
-        # at Gartner
-        r"at\s+([A-Z][A-Za-z0-9\s&]+?)(?:\s*[,.\n])",
-
-        # for Gartner
-        r"for\s+([A-Z][A-Za-z0-9\s&]+?)(?:\s*[,.\n])",
-    ]
-
-    blacklist = {
-        "we",
-        "our",
-        "team",
-        "community",
-        "linkedin",
-        "hello linkedin community",
-    }
-
-    for pattern in company_patterns:
-
-        match = re.search(
-            pattern,
-            jd_text,
-            re.IGNORECASE,
+        company = extract_company_from_email(
+            result["recruiter_email"]
         )
 
-        if match:
+        if company:
+            result["company"] = company
+
+    # --------------------------------------------------
+    # Fallback to JD Text
+    # --------------------------------------------------
+
+    if not result["company"]:
+
+        company_patterns = [
+
+            r"company\s*[:\-]\s*(.+)",
+
+            r"organization\s*[:\-]\s*(.+)",
+
+            r"employer\s*[:\-]\s*(.+)",
+
+            r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+"
+            r"(?:hiring|looking|expanding|growing|seeking)",
+
+            r"(?:join|joining)\s+"
+            r"([A-Z][A-Za-z& ]{2,50})",
+        ]
+
+        blacklist = {
+            "we",
+            "our",
+            "team",
+            "community",
+            "linkedin",
+            "hello linkedin community",
+        }
+
+        for pattern in company_patterns:
+
+            match = re.search(
+                pattern,
+                jd_text,
+                re.IGNORECASE,
+            )
+
+            if not match:
+                continue
 
             company_value = (
                 match.group(1)
@@ -664,23 +664,11 @@ def extract_job_details(jd_text: str) -> dict:
                 not in blacklist
                 and len(company_value) < 60
             ):
-                result["company"] = company_value
+
+                result["company"] = (
+                    company_value
+                )
+
                 break
-
-    # --------------------------------------------------
-    # Company from Email Fallback
-    # --------------------------------------------------
-
-    if (
-        not result["company"]
-        and result["recruiter_email"]
-    ):
-
-        result["company"] = (
-            extract_company_from_email(
-                result["recruiter_email"]
-            )
-            or ""
-        )
 
     return result
