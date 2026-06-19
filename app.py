@@ -69,21 +69,74 @@ your_phone = st.sidebar.text_input(
     value="8910384107"
 )
 
+
 # --------------------------------------------------
-# Resume Upload
+# Resume Loader (GitHub)
 # --------------------------------------------------
 
-st.sidebar.header("📎 Resume Upload")
+import requests
+from io import BytesIO
 
-resume_file = st.sidebar.file_uploader(
-    "Upload Resume (.pdf or .docx)",
-    type=["pdf", "docx"]
+st.sidebar.header("📎 Resume")
+
+RESUME_URL = (
+    "https://raw.githubusercontent.com/"
+    "trilokesh-sarkar/Linkedin_send_email/main/"
+    "1_Resume_Trilokesh.pdf"
 )
 
-if resume_file:
-    st.sidebar.success(
-        f"Uploaded: {resume_file.name}"
+@st.cache_data(show_spinner=False)
+def load_resume():
+    """
+    Download resume from GitHub once and cache it.
+    """
+    response = requests.get(
+        RESUME_URL,
+        timeout=20
     )
+
+    response.raise_for_status()
+
+    resume = BytesIO(response.content)
+
+    resume.name = (
+        "Trilokesh_Ranjan_Sarkar_Resume.pdf"
+    )
+
+    return resume
+
+
+try:
+
+    resume_file = load_resume()
+
+    st.sidebar.success(
+        "✅ Resume loaded from GitHub"
+    )
+
+    st.sidebar.info(
+        resume_file.name
+    )
+
+except Exception as e:
+
+    resume_file = None
+
+    st.sidebar.error(
+        f"Resume download failed: {e}"
+    )
+
+    # Optional fallback uploader
+    resume_file = st.sidebar.file_uploader(
+        "Upload Resume (.pdf)",
+        type=["pdf"]
+    )
+
+    if resume_file:
+        st.sidebar.success(
+            f"Uploaded: {resume_file.name}"
+        )
+
 
 # --------------------------------------------------
 # SMTP Credentials
@@ -381,9 +434,11 @@ with tab1:
                             )
                         )
 
-                        resume_bytes = (
-                            resume_file.getvalue()
-                        )
+                        if hasattr(resume_file, "getvalue"):
+                            resume_bytes = resume_file.getvalue()
+                        else:
+                            resume_file.seek(0)
+                            resume_bytes = resume_file.read()
 
                         part = MIMEBase(
                             "application",
