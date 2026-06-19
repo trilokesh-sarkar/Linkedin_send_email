@@ -353,6 +353,49 @@ def clean_location(location):
         location.title()
     )
 
+def extract_company_from_text(text):
+    """
+    Extract company directly from hiring post text.
+    """
+
+    patterns = [
+
+        # Gartner is expanding...
+        r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+(?:hiring|looking|expanding|growing|seeking)",
+
+        # Join Gartner
+        r"(?:join|joining)\s+([A-Z][A-Za-z& ]{2,50})",
+
+        # Hiring at Gartner
+        r"hiring\s+(?:at\s+)?([A-Z][A-Za-z& ]{2,50})",
+
+        # Gartner team
+        r"\b([A-Z][A-Za-z& ]{2,50})\s+(?:team|group|center|centre|coe)\b",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            company = match.group(1).strip()
+
+            company = re.sub(
+                r"\s+",
+                " ",
+                company
+            )
+
+            if len(company) > 2:
+                return company
+
+    return None
+
 
 def extract_job_details(jd_text: str) -> dict:
     """
@@ -383,7 +426,11 @@ def extract_job_details(jd_text: str) -> dict:
     # Recruiter Name Extraction
     # --------------------------------------------------
     if result["recruiter_email"]:
-        local_part = result["recruiter_email"].split("@")[0]
+
+        local_part = (
+            result["recruiter_email"]
+            .split("@")[0]
+        )
 
         name_parts = re.split(
             r"[._\-]",
@@ -391,13 +438,37 @@ def extract_job_details(jd_text: str) -> dict:
         )
 
         if name_parts:
-            first_name = name_parts[0].capitalize()
+
+            first_name = (
+                name_parts[0]
+                .strip()
+                .capitalize()
+            )
+
+            # Skip generic recruiter aliases
+            recruiter_blacklist = {
+                "hr",
+                "jobs",
+                "career",
+                "careers",
+                "recruitment",
+                "recruiter",
+                "hiring",
+                "talent",
+                "team",
+                "admin",
+                "support",
+                "info",
+            }
 
             if (
                 first_name.isalpha()
                 and len(first_name) > 2
+                and first_name.lower()
+                not in recruiter_blacklist
             ):
                 result["recruiter_name"] = first_name
+
     # --------------------------------------------------
     # Role Extraction
     # --------------------------------------------------
@@ -405,6 +476,7 @@ def extract_job_details(jd_text: str) -> dict:
     role = detect_target_role(jd_text)
 
     if role:
+
         result["role"] = role
 
     else:
@@ -443,9 +515,11 @@ def extract_job_details(jd_text: str) -> dict:
 
                 result["role"] = role
                 break
+
     # --------------------------------------------------
     # Location Extraction
     # --------------------------------------------------
+
     location_patterns = [
         r"location\s*[:\-]\s*(.+)",
         r"based\s*in\s*[:\-]?\s*(.+)",
@@ -454,6 +528,7 @@ def extract_job_details(jd_text: str) -> dict:
     ]
 
     for pattern in location_patterns:
+
         match = re.search(
             pattern,
             jd_text,
@@ -461,6 +536,7 @@ def extract_job_details(jd_text: str) -> dict:
         )
 
         if match:
+
             location_value = (
                 match.group(1)
                 .split("\n")[0]
@@ -470,12 +546,15 @@ def extract_job_details(jd_text: str) -> dict:
             result["location"] = clean_location(
                 location_value
             )
+
             break
 
     # --------------------------------------------------
     # Experience Extraction
     # --------------------------------------------------
+
     for pattern in EXP_PATTERNS:
+
         match = re.search(
             pattern,
             jd_text,
@@ -483,10 +562,15 @@ def extract_job_details(jd_text: str) -> dict:
         )
 
         if match:
-            result["experience"] = match.group(1)
+
+            result["experience"] = (
+                match.group(1)
+            )
+
             break
 
     if result["experience"]:
+
         normalized = normalize_exp(
             result["experience"]
         )
@@ -494,23 +578,59 @@ def extract_job_details(jd_text: str) -> dict:
         rng = exp_range(normalized)
 
         if rng:
-            result["experience_category"] = exp_category(
-                rng[0],
-                rng[1]
+
+            result["experience_category"] = (
+                exp_category(
+                    rng[0],
+                    rng[1]
+                )
             )
 
     # --------------------------------------------------
     # Company Extraction
     # --------------------------------------------------
+
     company_patterns = [
+
+        # Gartner is expanding...
+        r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+(?:hiring|looking|expanding|growing|seeking)",
+
+        # Infosys is hiring...
+        r"\b([A-Z][A-Za-z& ]{2,50})\s+is\s+hiring",
+
+        # Join Gartner
+        r"(?:join|joining)\s+([A-Z][A-Za-z& ]{2,50})",
+
+        # Hiring at Gartner
+        r"hiring\s+(?:at\s+)?([A-Z][A-Za-z& ]{2,50})",
+
+        # Company: Gartner
         r"company\s*[:\-]\s*(.+)",
+
+        # Organization: Gartner
         r"organization\s*[:\-]\s*(.+)",
+
+        # Employer: Gartner
         r"employer\s*[:\-]\s*(.+)",
+
+        # at Gartner
         r"at\s+([A-Z][A-Za-z0-9\s&]+?)(?:\s*[,.\n])",
+
+        # for Gartner
         r"for\s+([A-Z][A-Za-z0-9\s&]+?)(?:\s*[,.\n])",
     ]
 
+    blacklist = {
+        "we",
+        "our",
+        "team",
+        "community",
+        "linkedin",
+        "hello linkedin community",
+    }
+
     for pattern in company_patterns:
+
         match = re.search(
             pattern,
             jd_text,
@@ -518,23 +638,36 @@ def extract_job_details(jd_text: str) -> dict:
         )
 
         if match:
+
             company_value = (
                 match.group(1)
                 .strip()
                 .rstrip(".")
             )
 
-            if len(company_value) < 60:
+            company_value = re.sub(
+                r"\s+",
+                " ",
+                company_value
+            )
+
+            if (
+                company_value.lower()
+                not in blacklist
+                and len(company_value) < 60
+            ):
                 result["company"] = company_value
                 break
 
     # --------------------------------------------------
     # Company from Email Fallback
     # --------------------------------------------------
+
     if (
         not result["company"]
         and result["recruiter_email"]
     ):
+
         result["company"] = (
             extract_company_from_email(
                 result["recruiter_email"]
