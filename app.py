@@ -118,8 +118,14 @@ with tab1:
 
     st.subheader("Step 1: Paste Job Description")
 
+    # Initialize session state
+    if "jd_text" not in st.session_state:
+        st.session_state["jd_text"] = ""
+
+    # JD Text Area
     jd_text = st.text_area(
         "Paste the job description / hiring post here:",
+        key="jd_text",
         height=250,
         placeholder=(
             "Designation: Data Scientist\n"
@@ -129,11 +135,26 @@ with tab1:
         ),
     )
 
+    # Buttons Row
+    col_btn1, col_btn2 = st.columns(2)
+
+    with col_btn1:
+        extract_clicked = st.button("🔍 Extract Information")
+
+    with col_btn2:
+        clear_clicked = st.button("🗑️ Clear JD")
+
+    # Clear JD Button Logic
+    if clear_clicked:
+        st.session_state["jd_text"] = ""
+        st.session_state.pop("extracted", None)
+        st.rerun()
+
     # ----------------------------------------------
     # Extract Information
     # ----------------------------------------------
 
-    if st.button("🔍 Extract Information"):
+    if extract_clicked:
 
         if jd_text.strip():
 
@@ -177,26 +198,17 @@ with tab1:
 
             role = st.text_input(
                 "Role / Designation",
-                value=extracted.get(
-                    "role",
-                    ""
-                )
+                value=extracted.get("role", "")
             )
 
             company = st.text_input(
                 "Company",
-                value=extracted.get(
-                    "company",
-                    ""
-                )
+                value=extracted.get("company", "")
             )
 
             recruiter_name = st.text_input(
                 "Recruiter Name",
-                value=extracted.get(
-                    "recruiter_name",
-                    ""
-                )
+                value=extracted.get("recruiter_name", "")
             )
 
         with col2:
@@ -266,9 +278,7 @@ with tab1:
         # Email Preview
         # ------------------------------------------
 
-        st.subheader(
-            "Step 3: Email Preview"
-        )
+        st.subheader("Step 3: Email Preview")
 
         author = (
             recruiter_name
@@ -307,9 +317,7 @@ with tab1:
                 "Step 4: Send Application"
             )
 
-            if st.button(
-                "🚀 Send Email"
-            ):
+            if st.button("🚀 Send Email"):
 
                 email_regex = (
                     r"^[A-Za-z0-9._%+-]+"
@@ -364,10 +372,8 @@ with tab1:
 
                         msg["From"] = smtp_email
                         msg["To"] = recruiter_email
+                        msg["Subject"] = subject
 
-                        msg["Subject"] =  subject
-
-                        # HTML Email Body
                         msg.attach(
                             MIMEText(
                                 email_html,
@@ -375,8 +381,9 @@ with tab1:
                             )
                         )
 
-                        # Resume Attachment
-                        resume_bytes = resume_file.getvalue()
+                        resume_bytes = (
+                            resume_file.getvalue()
+                        )
 
                         part = MIMEBase(
                             "application",
@@ -398,7 +405,6 @@ with tab1:
 
                         msg.attach(part)
 
-                        # Gmail SMTP
                         with smtplib.SMTP(
                             "smtp.gmail.com",
                             587
@@ -417,7 +423,6 @@ with tab1:
                                 msg.as_string()
                             )
 
-                        # Save Record
                         save_application(
                             company=company_name,
                             role=role,
@@ -428,6 +433,15 @@ with tab1:
                         st.success(
                             f"✅ Application sent successfully to {recruiter_email}"
                         )
+
+                        # Auto Clear JD after sending
+                        st.session_state["jd_text"] = ""
+                        st.session_state.pop(
+                            "extracted",
+                            None
+                        )
+
+                        st.rerun()
 
                     except smtplib.SMTPAuthenticationError:
 
@@ -448,7 +462,7 @@ with tab1:
                 "Please fill your Name and Email "
                 "to preview the email."
             )
-
+            
 # ==================================================
 # APPLICATION TRACKER TAB
 # ==================================================
