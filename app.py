@@ -170,6 +170,11 @@ with tab1:
     if "jd_text" not in st.session_state:
         st.session_state["jd_text"] = ""
 
+    def clear_job_description():
+        """Clear the JD input before Streamlit renders its text-area widget."""
+        st.session_state["jd_text"] = ""
+        st.session_state.pop("extracted", None)
+
     # JD Text Area
     jd_text = st.text_area(
         "Paste the job description / hiring post here:",
@@ -190,13 +195,7 @@ with tab1:
         extract_clicked = st.button("🔍 Extract Information")
 
     with col_btn2:
-        clear_clicked = st.button("🗑️ Clear JD")
-
-    # Clear JD Button Logic
-    if clear_clicked:
-        st.session_state["jd_text"] = ""
-        st.session_state.pop("extracted", None)
-        st.rerun()
+        st.button("🗑️ Clear JD", on_click=clear_job_description)
 
     # ----------------------------------------------
     # Extract Information
