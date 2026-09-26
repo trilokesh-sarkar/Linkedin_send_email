@@ -51,26 +51,42 @@ def generate_email_content(
 📌 I am writing to express my interest in the
 <b style="color:#0F4C81;">{role}</b> opportunity at
 <b style="color:#0F4C81;">{company}</b>.
-With experience in <b>Python, SQL, Data Analytics, Generative AI, Agentic AI,
-LLMs, RAG, NLP, AWS, PostgreSQL, Redshift, and Apache Airflow</b>, I am excited about the opportunity to contribute
-to the innovative work being done at <b>{company}</b>.
+I am an AI/ML professional with <b>2 years of experience</b> building
+LLM-powered and agentic AI workflows, OCR/NLP pipelines, and computer vision
+solutions. I am currently serving my notice period and am actively exploring
+opportunities where I can contribute.
 </p>
 
 <p>
 🚀 In my current role, I build data-driven and AI-powered solutions involving
-<b>Agentic AI, AI Agents, Generative AI, LLMs, Data Engineering, ETL Pipelines,
-Automation, Prompt Engineering, Vector Search, Embeddings, Semantic Search,
-Knowledge Retrieval, and Retrieval-Augmented Generation (RAG)</b>.
-I enjoy solving complex business problems through agentic AI and automation while
-delivering scalable solutions that create measurable business impact. I am currently
-serving my notice period and am actively exploring opportunities where I can contribute.
+the following role-relevant strengths:
+</p>
+
+<ul>
+  <li><b>AI/ML:</b> Machine Learning, Deep Learning, Computer Vision, image
+  classification, model evaluation, and YOLOv8-based ANPR solutions.</li>
+  <li><b>Generative &amp; Agentic AI:</b> GPT-4o API integration, Prompt Engineering,
+  LLM-driven workflow design, tool calling, human-in-the-loop validation, LLM
+  output evaluation, and resource-constrained fine-tuning.</li>
+  <li><b>NLP &amp; Document AI:</b> Named Entity Recognition (NER), OCR/NLP
+  automation, PyTesseract OCR, regex-based extraction, and document digitization.</li>
+  <li><b>Data &amp; cloud:</b> Python, SQL, AWS, Amazon Redshift, PostgreSQL,
+  Apache Airflow, ETL pipelines, Label Studio, and workflow automation.</li>
+</ul>
+
+<p>
+I translate business requirements into reliable AI workflows with measurable
+results. Recent work reduced manual extraction effort by <b>up to 80%</b>, while
+marketing analytics dashboards improved engagement by <b>15%</b> and conversions
+by <b>12%</b>. My resume includes further project outcomes and technical details
+relevant to <b>{role}</b>.
 </p>
 
 <p>
 📎 I have attached my resume for your review and would welcome the opportunity
-to discuss how my skills and experience can contribute to the continued success
-of <b>{company}</b>. Thank you for your time and consideration, and I look
-forward to hearing from you.
+to have a brief conversation about how my AI/ML and production engineering
+experience can support the goals of <b>{company}</b>. Thank you for your
+consideration.
 </p>
 
 <p>
