@@ -27,7 +27,7 @@ def generate_email_content(
     # Subject
     # ------------------------------------------
 
-    subject = f"🚀 Application for {role} | {your_name}"
+    subject = f"🚀 Application for {role} | Serving Notice Period | {your_name}"
 
     # ------------------------------------------
     # HTML Email
