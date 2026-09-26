@@ -51,19 +51,19 @@ def generate_email_content(
 📌 I am writing to express my interest in the
 <b style="color:#0F4C81;">{role}</b> opportunity at
 <b style="color:#0F4C81;">{company}</b>.
-With experience in <b>Python, SQL, Data Analytics, Machine Learning,
-Generative AI, LLMs, RAG, NLP, AWS, PostgreSQL, Redshift, Power BI,
-and Apache Airflow</b>, I am excited about the opportunity to contribute
+With experience in <b>Python, SQL, Data Analytics, Generative AI, Agentic AI,
+LLMs, RAG, NLP, AWS, PostgreSQL, Redshift, and Apache Airflow</b>, I am excited about the opportunity to contribute
 to the innovative work being done at <b>{company}</b>.
 </p>
 
 <p>
 🚀 In my current role, I build data-driven and AI-powered solutions involving
-<b>Data Science, Data Engineering, ETL Pipelines, Forecasting, Automation,
-Prompt Engineering, Vector Search, Embeddings, Semantic Search,
+<b>Agentic AI, AI Agents, Generative AI, LLMs, Data Engineering, ETL Pipelines,
+Automation, Prompt Engineering, Vector Search, Embeddings, Semantic Search,
 Knowledge Retrieval, and Retrieval-Augmented Generation (RAG)</b>.
-I enjoy solving complex business problems through data and AI while delivering
-scalable solutions that create measurable business impact.
+I enjoy solving complex business problems through agentic AI and automation while
+delivering scalable solutions that create measurable business impact. I am currently
+serving my notice period and am actively exploring opportunities where I can contribute.
 </p>
 
 <p>
