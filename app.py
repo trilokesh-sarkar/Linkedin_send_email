@@ -166,19 +166,20 @@ with tab1:
 
     st.subheader("Step 1: Paste Job Description")
 
-    # Initialize session state
-    if "jd_text" not in st.session_state:
-        st.session_state["jd_text"] = ""
+    # Use a changing widget key to reset the text area without modifying its
+    # active session-state key. This works reliably across Streamlit versions.
+    if "jd_input_version" not in st.session_state:
+        st.session_state["jd_input_version"] = 0
 
     def clear_job_description():
-        """Clear the JD input before Streamlit renders its text-area widget."""
-        st.session_state["jd_text"] = ""
+        """Render a fresh, empty JD text area and clear extracted details."""
+        st.session_state["jd_input_version"] += 1
         st.session_state.pop("extracted", None)
 
     # JD Text Area
     jd_text = st.text_area(
         "Paste the job description / hiring post here:",
-        key="jd_text",
+        key=f"jd_text_{st.session_state['jd_input_version']}",
         height=250,
         placeholder=(
             "Designation: Data Scientist\n"
@@ -479,8 +480,9 @@ with tab1:
                             f"✅ Application sent successfully to {recruiter_email}"
                         )
 
-                        # Auto Clear JD after sending
-                        st.session_state["jd_text"] = ""
+                        # Auto-clear the JD after sending without changing the
+                        # active text-area widget state.
+                        st.session_state["jd_input_version"] += 1
                         st.session_state.pop(
                             "extracted",
                             None
